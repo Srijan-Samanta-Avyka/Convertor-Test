@@ -1,33 +1,288 @@
 pipeline:
-  name: Pipeline
   identifier: Pipeline
-  projectIdentifier: rssplay
+  name: Converter_Name
   orgIdentifier: default
-  tags: {}
+  projectIdentifier: rssplay
+  properties:
+    ci:
+      codebase:
+        build: <+input>
   stages:
-    - stage:
-        name: Build
-        identifier: Build
-        description: ""
-        type: CI
-        spec:
-          cloneCodebase: false
-          caching:
-            enabled: true
-          buildIntelligence:
-            enabled: true
-          platform:
-            os: Linux
-            arch: Amd64
-          runtime:
-            type: Cloud
-            spec: {}
-          execution:
-            steps:
-              - step:
-                  type: Run
-                  name: Run_1
-                  identifier: Run_1
-                  spec:
-                    shell: Sh
-                    command: echo "Harness"
+    - parallel:
+        - stage:
+            identifier: linting
+            name: Linting
+            spec:
+              cloneCodebase: false
+              execution:
+                steps:
+                  - step:
+                      identifier: runstep0
+                      name: RunStep0
+                      spec:
+                        command: echo "Running linter on ${OS} with ${Browser}"
+                        shell: Sh
+                      type: Run
+                  - step:
+                      identifier: runstep1
+                      name: RunStep1
+                      spec:
+                        command: |
+                          python3 -m flake8 my_code/
+                          # To_Do_Change elseif(OS==Windows)batflake8 my_code\\
+                        shell: Sh
+                      type: Run
+              platform:
+                arch: Arm64
+                os: Linux
+              runtime:
+                spec: {}
+                type: Cloud
+            strategy:
+              matrix:
+                Browser:
+                  - Chrome
+                  - Firefox
+                  - Safari
+                OS:
+                  - Linux
+                  - Windows
+                  - Mac
+                exclude:
+                  - Browser: Safari
+                    OS: Linux
+                  - Browser: Firefox
+                    OS: windows
+            type: CI
+        - stage:
+            identifier: build
+            name: Build
+            spec:
+              cloneCodebase: false
+              execution:
+                steps:
+                  - step:
+                      identifier: runstep0
+                      name: RunStep0
+                      spec:
+                        command: echo "Running linter on ${OS} with ${Browser}"
+                        shell: Sh
+                      type: Run
+                  - step:
+                      identifier: runstep1
+                      name: RunStep1
+                      spec:
+                        command: |
+                          python3 -m flake8 my_code/
+                          # To_Do_Change elseif(OS==Windows)batflake8 my_code\\
+                        shell: Sh
+                      type: Run
+                  - step:
+                      identifier: runstep2
+                      name: RunStep2
+                      spec:
+                        command: echo "Building on ${OS} with ${Browser}"
+                        shell: Sh
+                      type: Run
+                  - step:
+                      identifier: runstep3
+                      name: RunStep3
+                      spec:
+                        command: |
+                          # To_Do_Change elseif(OS==Windows)batflake8 my_code\\
+                          ./build.sh
+                          # To_Do_Change elseif(OS==Windows)batbuild.batelseif(OS==Mac)
+                          ./build.sh
+                        shell: Sh
+                      type: Run
+              platform:
+                arch: Arm64
+                os: Linux
+              runtime:
+                spec: {}
+                type: Cloud
+            strategy:
+              matrix:
+                Browser:
+                  - Chrome
+                  - Firefox
+                  - Safari
+                OS:
+                  - Linux
+                  - Windows
+                  - Mac
+                exclude:
+                  - Browser: Safari
+                    OS: Linux
+                  - Browser: Firefox
+                    OS: windows
+            type: CI
+    - parallel:
+        - stage:
+            identifier: linuxchrome
+            name: Linux Chrome
+            spec:
+              cloneCodebase: false
+              execution:
+                steps:
+                  - step:
+                      identifier: runstep0
+                      name: RunStep0
+                      spec:
+                        command: echo "Running on Linux with Chrome"
+                        shell: Sh
+                      type: Run
+                  - step:
+                      identifier: runstep1
+                      name: RunStep1
+                      spec:
+                        command: ./run_tests.sh
+                        shell: Sh
+                      type: Run
+                  - step:
+                      identifier: runstep2
+                      name: RunStep2
+                      spec:
+                        command: ./deploy.sh
+                        shell: Sh
+                      type: Run
+              platform:
+                arch: Arm64
+                os: Linux
+              runtime:
+                spec: {}
+                type: Cloud
+            type: CI
+        - stage:
+            identifier: windowsfirefox
+            name: Windows Firefox
+            spec:
+              cloneCodebase: false
+              execution:
+                steps:
+                  - step:
+                      identifier: runstep0
+                      name: RunStep0
+                      spec:
+                        command: echo "Running on Linux with Chrome"
+                        shell: Sh
+                      type: Run
+                  - step:
+                      identifier: runstep1
+                      name: RunStep1
+                      spec:
+                        command: ./run_tests.sh
+                        shell: Sh
+                      type: Run
+                  - step:
+                      identifier: runstep2
+                      name: RunStep2
+                      spec:
+                        command: ./deploy.sh
+                        shell: Sh
+                      type: Run
+                  - step:
+                      identifier: runstep3
+                      name: RunStep3
+                      spec:
+                        command: echo "Running on Windows with Firefox"
+                        shell: Sh
+                      type: Run
+                  - step:
+                      identifier: runstep4
+                      name: RunStep4
+                      spec:
+                        command: echo "run_tests.bat"
+                        shell: Sh
+                      type: Run
+                  - step:
+                      identifier: runstep5
+                      name: RunStep5
+                      spec:
+                        command: echo "deploy.bat"
+                        shell: Sh
+                      type: Run
+              platform:
+                arch: Arm64
+                os: Linux
+              runtime:
+                spec: {}
+                type: Cloud
+            type: CI
+        - stage:
+            identifier: macsafari
+            name: Mac Safari
+            spec:
+              cloneCodebase: false
+              execution:
+                steps:
+                  - step:
+                      identifier: runstep0
+                      name: RunStep0
+                      spec:
+                        command: echo "Running on Linux with Chrome"
+                        shell: Sh
+                      type: Run
+                  - step:
+                      identifier: runstep1
+                      name: RunStep1
+                      spec:
+                        command: ./run_tests.sh
+                        shell: Sh
+                      type: Run
+                  - step:
+                      identifier: runstep2
+                      name: RunStep2
+                      spec:
+                        command: ./deploy.sh
+                        shell: Sh
+                      type: Run
+                  - step:
+                      identifier: runstep3
+                      name: RunStep3
+                      spec:
+                        command: echo "Running on Windows with Firefox"
+                        shell: Sh
+                      type: Run
+                  - step:
+                      identifier: runstep4
+                      name: RunStep4
+                      spec:
+                        command: echo "run_tests.bat"
+                        shell: Sh
+                      type: Run
+                  - step:
+                      identifier: runstep5
+                      name: RunStep5
+                      spec:
+                        command: echo "deploy.bat"
+                        shell: Sh
+                      type: Run
+                  - step:
+                      identifier: runstep6
+                      name: RunStep6
+                      spec:
+                        command: echo "Running on Mac with Safari"
+                        shell: Sh
+                      type: Run
+                  - step:
+                      identifier: runstep7
+                      name: RunStep7
+                      spec:
+                        command: ./run_tests.sh
+                        shell: Sh
+                      type: Run
+                  - step:
+                      identifier: runstep8
+                      name: RunStep8
+                      spec:
+                        command: ./deploy.sh
+                        shell: Sh
+                      type: Run
+              platform:
+                arch: Arm64
+                os: Linux
+              runtime:
+                spec: {}
+                type: Cloud
+            type: CI
