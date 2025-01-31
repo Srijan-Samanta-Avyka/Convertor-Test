@@ -109,7 +109,7 @@ pipeline:
             when:
               pipelineStatus: Success
         - stage:
-            identifier: testonlinuxnew
+            identifier: testonlinuxnew1
             name: Test On Linux New
             spec:
               cloneCodebase: false
@@ -170,7 +170,7 @@ pipeline:
             when:
               pipelineStatus: Success
         - stage:
-            identifier: testonlinuxnew1
+            identifier: testonlinuxnew
             name: Test On Linux New
             spec:
               cloneCodebase: false
@@ -235,7 +235,7 @@ pipeline:
                 type: Cloud
             type: CI
             when:
-              condition: <+pipeline.branch> == "branch" && <+pipeline.branch> == "master" && <+pipeline.branch> == ";"
+              condition: <+pipeline.branch> == "master"
               pipelineStatus: Success
     - stage:
         identifier: unittests
@@ -284,6 +284,12 @@ pipeline:
         when:
           pipelineStatus: Success
   variables:
+    - name: git_commit_author_name
+      type: String
+      value: default
+    - name: git_commit_author_email
+      type: String
+      value: default
     - name: git_commit_message
       type: String
       value: default
@@ -291,11 +297,5 @@ pipeline:
       type: String
       value: default
     - name: git_commit_author
-      type: String
-      value: default
-    - name: git_commit_author_name
-      type: String
-      value: default
-    - name: git_commit_author_email
       type: String
       value: default
