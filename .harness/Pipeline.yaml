@@ -8,56 +8,10 @@ pipeline:
       codebase:
         build: <+input>
   stages:
-    - stage:
-        identifier: build
-        name: Build
-        spec:
-          cloneCodebase: false
-          execution:
-            steps:
-              - step:
-                  identifier: runstep0
-                  name: RunStep0
-                  spec:
-                    command: Run Build Stage
-                    shell: Sh
-                  type: Run
-          platform:
-            arch: Arm64
-            os: Linux
-          runtime:
-            spec: {}
-            type: Cloud
-        type: CI
-        when:
-          pipelineStatus: Success
-    - stage:
-        identifier: staticcodeanalysis
-        name: Static Code Analysis
-        spec:
-          cloneCodebase: false
-          execution:
-            steps:
-              - step:
-                  identifier: runstep0
-                  name: RunStep0
-                  spec:
-                    command: echo 'Run Static Code Analysis'
-                    shell: Sh
-                  type: Run
-          platform:
-            arch: Arm64
-            os: Linux
-          runtime:
-            spec: {}
-            type: Cloud
-        type: CI
-        when:
-          pipelineStatus: Success
     - parallel:
         - stage:
-            identifier: testonwindows
-            name: Test On Windows
+            identifier: linting
+            name: Linting
             spec:
               cloneCodebase: false
               execution:
@@ -66,7 +20,16 @@ pipeline:
                       identifier: runstep0
                       name: RunStep0
                       spec:
-                        command: echo "run-tests.bat"
+                        command: echo "Running linter on ${OS} with ${Browser}"
+                        shell: Sh
+                      type: Run
+                  - step:
+                      identifier: runstep1
+                      name: RunStep1
+                      spec:
+                        command: |
+                          python3 -m flake8 my_code/
+                          # To_Do_Change elseif(OS==Windows)batflake8 my_code\\
                         shell: Sh
                       type: Run
               platform:
@@ -75,12 +38,27 @@ pipeline:
               runtime:
                 spec: {}
                 type: Cloud
+            strategy:
+              matrix:
+                Browser:
+                  - Chrome
+                  - Firefox
+                  - Safari
+                OS:
+                  - Linux
+                  - Windows
+                  - Mac
+                exclude:
+                  - Browser: Safari
+                    OS: Linux
+                  - Browser: Firefox
+                    OS: windows
             type: CI
             when:
               pipelineStatus: Success
         - stage:
-            identifier: testonlinux
-            name: Test On Linux
+            identifier: build
+            name: Build
             spec:
               cloneCodebase: false
               execution:
@@ -89,51 +67,34 @@ pipeline:
                       identifier: runstep0
                       name: RunStep0
                       spec:
-                        command: echo "run-tests.bat"
+                        command: echo "Running linter on ${OS} with ${Browser}"
                         shell: Sh
                       type: Run
                   - step:
                       identifier: runstep1
                       name: RunStep1
                       spec:
-                        command: run-tests.sh
-                        shell: Sh
-                      type: Run
-              platform:
-                arch: Arm64
-                os: Linux
-              runtime:
-                spec: {}
-                type: Cloud
-            type: CI
-            when:
-              pipelineStatus: Success
-        - stage:
-            identifier: testonlinuxnew1
-            name: Test On Linux New
-            spec:
-              cloneCodebase: false
-              execution:
-                steps:
-                  - step:
-                      identifier: runstep0
-                      name: RunStep0
-                      spec:
-                        command: echo "run-tests.bat"
-                        shell: Sh
-                      type: Run
-                  - step:
-                      identifier: runstep1
-                      name: RunStep1
-                      spec:
-                        command: run-tests.sh
+                        command: |
+                          python3 -m flake8 my_code/
+                          # To_Do_Change elseif(OS==Windows)batflake8 my_code\\
                         shell: Sh
                       type: Run
                   - step:
                       identifier: runstep2
                       name: RunStep2
                       spec:
-                        command: run-tests.sh
+                        command: echo "Building on ${OS} with ${Browser}"
+                        shell: Sh
+                      type: Run
+                  - step:
+                      identifier: runstep3
+                      name: RunStep3
+                      spec:
+                        command: |
+                          # To_Do_Change elseif(OS==Windows)batflake8 my_code\\
+                          ./build.sh
+                          # To_Do_Change elseif(OS==Windows)batbuild.batelseif(OS==Mac)
+                          ./build.sh
                         shell: Sh
                       type: Run
               platform:
@@ -142,13 +103,28 @@ pipeline:
               runtime:
                 spec: {}
                 type: Cloud
+            strategy:
+              matrix:
+                Browser:
+                  - Chrome
+                  - Firefox
+                  - Safari
+                OS:
+                  - Linux
+                  - Windows
+                  - Mac
+                exclude:
+                  - Browser: Safari
+                    OS: Linux
+                  - Browser: Firefox
+                    OS: windows
             type: CI
             when:
               pipelineStatus: Success
     - parallel:
         - stage:
-            identifier: testonwindowsnew
-            name: Test On Windows New
+            identifier: linuxchrome
+            name: Linux Chrome
             spec:
               cloneCodebase: false
               execution:
@@ -157,74 +133,21 @@ pipeline:
                       identifier: runstep0
                       name: RunStep0
                       spec:
-                        command: echo "run-tests.bat"
-                        shell: Sh
-                      type: Run
-              platform:
-                arch: Arm64
-                os: Linux
-              runtime:
-                spec: {}
-                type: Cloud
-            type: CI
-            when:
-              pipelineStatus: Success
-        - stage:
-            identifier: testonlinuxnew
-            name: Test On Linux New
-            spec:
-              cloneCodebase: false
-              execution:
-                steps:
-                  - step:
-                      identifier: runstep0
-                      name: RunStep0
-                      spec:
-                        command: echo "run-tests.bat"
+                        command: echo "Running on Linux with Chrome"
                         shell: Sh
                       type: Run
                   - step:
                       identifier: runstep1
                       name: RunStep1
                       spec:
-                        command: run-tests.sh
-                        shell: Sh
-                      type: Run
-              platform:
-                arch: Arm64
-                os: Linux
-              runtime:
-                spec: {}
-                type: Cloud
-            type: CI
-            when:
-              pipelineStatus: Success
-        - stage:
-            identifier: testonlinuxnewdoc
-            name: Test On Linux New DOC
-            spec:
-              cloneCodebase: false
-              execution:
-                steps:
-                  - step:
-                      identifier: runstep0
-                      name: RunStep0
-                      spec:
-                        command: echo "run-tests.bat"
-                        shell: Sh
-                      type: Run
-                  - step:
-                      identifier: runstep1
-                      name: RunStep1
-                      spec:
-                        command: run-tests.sh
+                        command: ./run_tests.sh
                         shell: Sh
                       type: Run
                   - step:
                       identifier: runstep2
                       name: RunStep2
                       spec:
-                        command: run-tests.sh
+                        command: ./deploy.sh
                         shell: Sh
                       type: Run
               platform:
@@ -235,67 +158,141 @@ pipeline:
                 type: Cloud
             type: CI
             when:
-              condition: <+pipeline.branch> == "master"
               pipelineStatus: Success
-    - stage:
-        identifier: unittests
-        name: Unit Tests
-        spec:
-          cloneCodebase: false
-          execution:
-            steps:
-              - step:
-                  identifier: runstep0
-                  name: RunStep0
-                  spec:
-                    command: echo 'Run Unit Tests'
-                    shell: Sh
-                  type: Run
-          platform:
-            arch: Arm64
-            os: Linux
-          runtime:
-            spec: {}
-            type: Cloud
-        type: CI
-        when:
-          pipelineStatus: Success
-    - stage:
-        identifier: acceptancetests
-        name: Acceptance Tests
-        spec:
-          cloneCodebase: false
-          execution:
-            steps:
-              - step:
-                  identifier: runstep0
-                  name: RunStep0
-                  spec:
-                    command: echo 'Run Acceptance Tests'
-                    shell: Sh
-                  type: Run
-          platform:
-            arch: Arm64
-            os: Linux
-          runtime:
-            spec: {}
-            type: Cloud
-        type: CI
-        when:
-          pipelineStatus: Success
-  variables:
-    - name: git_commit_author_name
-      type: String
-      value: default
-    - name: git_commit_author_email
-      type: String
-      value: default
-    - name: git_commit_message
-      type: String
-      value: default
-    - name: git_commit_diff
-      type: String
-      value: default
-    - name: git_commit_author
-      type: String
-      value: default
+        - stage:
+            identifier: windowsfirefox
+            name: Windows Firefox
+            spec:
+              cloneCodebase: false
+              execution:
+                steps:
+                  - step:
+                      identifier: runstep0
+                      name: RunStep0
+                      spec:
+                        command: echo "Running on Linux with Chrome"
+                        shell: Sh
+                      type: Run
+                  - step:
+                      identifier: runstep1
+                      name: RunStep1
+                      spec:
+                        command: ./run_tests.sh
+                        shell: Sh
+                      type: Run
+                  - step:
+                      identifier: runstep2
+                      name: RunStep2
+                      spec:
+                        command: ./deploy.sh
+                        shell: Sh
+                      type: Run
+                  - step:
+                      identifier: runstep3
+                      name: RunStep3
+                      spec:
+                        command: echo "Running on Windows with Firefox"
+                        shell: Sh
+                      type: Run
+                  - step:
+                      identifier: runstep4
+                      name: RunStep4
+                      spec:
+                        command: echo "run_tests.bat"
+                        shell: Sh
+                      type: Run
+                  - step:
+                      identifier: runstep5
+                      name: RunStep5
+                      spec:
+                        command: echo "deploy.bat"
+                        shell: Sh
+                      type: Run
+              platform:
+                arch: Arm64
+                os: Linux
+              runtime:
+                spec: {}
+                type: Cloud
+            type: CI
+            when:
+              pipelineStatus: Success
+        - stage:
+            identifier: macsafari
+            name: Mac Safari
+            spec:
+              cloneCodebase: false
+              execution:
+                steps:
+                  - step:
+                      identifier: runstep0
+                      name: RunStep0
+                      spec:
+                        command: echo "Running on Linux with Chrome"
+                        shell: Sh
+                      type: Run
+                  - step:
+                      identifier: runstep1
+                      name: RunStep1
+                      spec:
+                        command: ./run_tests.sh
+                        shell: Sh
+                      type: Run
+                  - step:
+                      identifier: runstep2
+                      name: RunStep2
+                      spec:
+                        command: ./deploy.sh
+                        shell: Sh
+                      type: Run
+                  - step:
+                      identifier: runstep3
+                      name: RunStep3
+                      spec:
+                        command: echo "Running on Windows with Firefox"
+                        shell: Sh
+                      type: Run
+                  - step:
+                      identifier: runstep4
+                      name: RunStep4
+                      spec:
+                        command: echo "run_tests.bat"
+                        shell: Sh
+                      type: Run
+                  - step:
+                      identifier: runstep5
+                      name: RunStep5
+                      spec:
+                        command: echo "deploy.bat"
+                        shell: Sh
+                      type: Run
+                  - step:
+                      identifier: runstep6
+                      name: RunStep6
+                      spec:
+                        command: echo "Running on Mac with Safari"
+                        shell: Sh
+                      type: Run
+                  - step:
+                      identifier: runstep7
+                      name: RunStep7
+                      spec:
+                        command: ./run_tests.sh
+                        shell: Sh
+                      type: Run
+                  - step:
+                      identifier: runstep8
+                      name: RunStep8
+                      spec:
+                        command: ./deploy.sh
+                        shell: Sh
+                      type: Run
+              platform:
+                arch: Arm64
+                os: Linux
+              runtime:
+                spec: {}
+                type: Cloud
+            type: CI
+            when:
+              pipelineStatus: Success
